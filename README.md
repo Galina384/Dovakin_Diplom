@@ -25,9 +25,7 @@
 
 https://dovakin.yonote.ru/share/4feb6b8f-a5cb-414b-91a5-227b3d712b82
 
-git clone https://github.com/Galina384/Dovakin_Diplom.git
-cd Dovakin_Diplom
-
+https://github.com/Galina384/Dovakin_Diplom
 
 
 По результатам тестирования Ui тестов я столкнулась с капчей и в ручную ее проходила.
