@@ -1,8 +1,14 @@
+import os
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
+from dotenv import load_dotenv
+
+load_dotenv()
+
+KINOPOISK_URL = os.getenv("KINOPOISK_URL", "https://www.kinopoisk.ru")
 
 
 class TestKinopoiskUI:
@@ -10,7 +16,7 @@ class TestKinopoiskUI:
     @pytest.mark.ui
     def test_search_movie(self):
         driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
+        driver.get(KINOPOISK_URL)
 
         input("Пройдите капчу в браузере, затем нажмите Enter...")
 
@@ -25,7 +31,7 @@ class TestKinopoiskUI:
     @pytest.mark.ui
     def test_search_empty(self):
         driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
+        driver.get(KINOPOISK_URL)
 
         input("Пройдите капчу в браузере, затем нажмите Enter...")
 
@@ -40,7 +46,7 @@ class TestKinopoiskUI:
     @pytest.mark.ui
     def test_search_english(self):
         driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
+        driver.get(KINOPOISK_URL)
 
         input("Пройдите капчу в браузере, затем нажмите Enter...")
 
@@ -55,7 +61,7 @@ class TestKinopoiskUI:
     @pytest.mark.ui
     def test_main_page_load(self):
         driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
+        driver.get(KINOPOISK_URL)
 
         input("Пройдите капчу в браузере, затем нажмите Enter...")
 
@@ -65,7 +71,7 @@ class TestKinopoiskUI:
     @pytest.mark.ui
     def test_search_button_exists(self):
         driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
+        driver.get(KINOPOISK_URL)
 
         input("Пройдите капчу в браузере, затем нажмите Enter...")
 
