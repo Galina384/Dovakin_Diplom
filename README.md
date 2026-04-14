@@ -25,3 +25,5 @@
 ```bash
 git clone https://github.com/Galina384/Dovakin_Diplom.git
 cd Dovakin_Diplom
+
+По результатам тестирования Ui тестов я столкнулась с капчей и в ручную ее проходила.
