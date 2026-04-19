@@ -21,7 +21,18 @@
 
 ## Установка и запуск
 
+<<<<<<< HEAD
 ### 1. Клонирование репозитория
 ```bash
 git clone https://github.com/Galina384/Dovakin_Diplom.git
 cd Dovakin_Diplom
+=======
+### 1. Ссылка на финальный проект по ручному тестированию 
+
+https://dovakin.yonote.ru/share/4feb6b8f-a5cb-414b-91a5-227b3d712b82
+
+https://github.com/Galina384/Dovakin_Diplom
+
+
+По результатам тестирования Ui тестов я столкнулась с капчей и в ручную ее проходила.
+>>>>>>> 3e7d39cbd666fa9c1842bcd97e3fafbb5b374b15
