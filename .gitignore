@@ -1,7 +1,5 @@
 __pycache__/
 .pytest_cache/
-.vscode/
+*.pyc
+CACHEDIR.TAG
 .env
-*.exe
-cookies.json
-save_cookies.py
