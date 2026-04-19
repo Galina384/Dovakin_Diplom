@@ -1,101 +1,99 @@
+import os
 import pytest
 import allure
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-import time
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.kinopoisk.dev")
+API_TOKEN = os.getenv("API_TOKEN")
 
 
-@allure.feature("UI тесты Кинопоиска")
-class TestKinopoiskUI:
+def make_request(endpoint: str, token: str = None) -> requests.Response:
+    url = f"{API_BASE_URL}{endpoint}"
+    headers = {"accept": "application/json"}
+    if token:
+        headers["X-API-KEY"] = token
+    return requests.get(url, headers=headers)
 
-    @allure.title("Поиск по названию. Пример: Ужасающий")
-    @allure.story("Поиск фильма")
-    @pytest.mark.ui
-    def test_search_by_name_terrifier(self) -> None:
-        driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
 
-        input("Пройдите капчу в браузере, затем нажмите Enter...")
+@allure.feature("API тесты Кинопоиска")
+class TestKinopoiskAPI:
 
-        search_input = driver.find_element(By.NAME, "kp_query")
-        search_input.send_keys("Ужасающий")
-        search_input.send_keys(Keys.RETURN)
-        time.sleep(3)
+    @allure.title("Поиск фильма по ID 326")
+    @allure.story("Поиск")
+    @pytest.mark.api
+    def test_get_movie_by_id(self) -> None:
+        response = make_request("/v1.4/movie/326", API_TOKEN)
+        assert response.status_code == 200
+        data = response.json()
+        assert data.get("id") == 326
 
-        assert "Ужасающий" in driver.title
-        driver.quit()
+    @allure.title("Поиск по неверному эндпоинту (баг: 200 вместо 404)")
+    @allure.story("Негативные тесты")
+    @pytest.mark.api
+    def test_invalid_endpoint(self) -> None:
+        response = make_request("/v1.4/movies", API_TOKEN)
+        # БАГ: должно быть 404, приходит 200
+        assert response.status_code == 404
 
-    @allure.title("Поиск фильма по обрывку названия")
-    @allure.story("Поиск фильма")
-    @pytest.mark.ui
-    def test_search_by_partial_name(self) -> None:
-        driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
+    @allure.title("Поиск по несуществующему ID")
+    @allure.story("Негативные тесты")
+    @pytest.mark.api
+    def test_nonexistent_id(self) -> None:
+        response = make_request("/v1.4/movie/9999999999", API_TOKEN)
+        assert response.status_code == 400
 
-        input("Пройдите капчу в браузере, затем нажмите Enter...")
+    @allure.title("Поиск по названию на кириллице")
+    @allure.story("Поиск")
+    @pytest.mark.api
+    def test_search_cyrillic(self) -> None:
+        response = make_request("/v1.4/movie/search?query=во все тяжкие", API_TOKEN)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data.get("docs", [])) > 0
 
-        search_input = driver.find_element(By.NAME, "kp_query")
-        search_input.send_keys("Ужаса")
-        search_input.send_keys(Keys.RETURN)
-        time.sleep(3)
+    @allure.title("Поиск по названию на латинице с ошибкой")
+    @allure.story("Поиск")
+    @pytest.mark.api
+    def test_search_typo(self) -> None:
+        response = make_request("/v1.4/movie/search?query=grien mile", API_TOKEN)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data.get("docs", [])) > 0
 
-        assert "Ужасающий" in driver.title or "результат" in driver.current_url
-        driver.quit()
+    @allure.title("Поиск с пустым запросом (баг: 200 вместо 400)")
+    @allure.story("Негативные тесты")
+    @pytest.mark.api
+    def test_empty_search(self) -> None:
+        response = make_request("/v1.4/movie/search", API_TOKEN)
+        # БАГ: должно быть 400, приходит 200
+        assert response.status_code == 400
 
-    @allure.title("Поиск фильма по актеру Тео Джеймс")
-    @allure.story("Поиск по актеру")
-    @pytest.mark.ui
-    def test_search_by_actor(self) -> None:
-        driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
+    @allure.title("Запрос без API-ключа (ожидание 401)")
+    @allure.story("Негативные тесты")
+    @pytest.mark.api
+    def test_no_api_key(self) -> None:
+        response = make_request("/v1.4/movie/326", None)
+        assert response.status_code == 401
 
-        input("Пройдите капчу в браузере, затем нажмите Enter...")
+    @allure.title("Запрос с невалидным API-ключом (ожидание 401)")
+    @allure.story("Негативные тесты")
+    @pytest.mark.api
+    def test_invalid_api_key(self) -> None:
+        url = f"{API_BASE_URL}/v1.4/movie/search?query=матрица"
+        headers = {"X-API-KEY": "invalid_token_12345", "accept": "application/json"}
+        response = requests.get(url, headers=headers)
+        assert response.status_code == 401
+        data = response.json()
+        assert "Пользователь не найден" in str(data) or "Unauthorized" in str(data)
 
-        search_input = driver.find_element(By.NAME, "kp_query")
-        search_input.send_keys("Тео Джеймс")
-        search_input.send_keys(Keys.RETURN)
-        time.sleep(3)
-
-        assert "Тео Джеймс" in driver.title or "актер" in driver.current_url
-        driver.quit()
-
-    @allure.title("Выбор фильма и просмотр карточки")
-    @allure.story("Карточка фильма")
-    @pytest.mark.ui
-    def test_select_movie_and_view_card(self) -> None:
-        driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
-
-        input("Пройдите капчу в браузере, затем нажмите Enter...")
-
-        search_input = driver.find_element(By.NAME, "kp_query")
-        search_input.send_keys("Ярость")
-        search_input.send_keys(Keys.RETURN)
-        time.sleep(3)
-
-        first_movie = driver.find_element(
-            By.XPATH, "(//div[@class='search_results']//a)[1]")
-        first_movie.click()
-        time.sleep(2)
-
-        assert "Ярость" in driver.title or "фильм" in driver.title
-        driver.quit()
-
-    @allure.title("Очистка поисковой строки")
-    @allure.story("Поисковая строка")
-    @pytest.mark.ui
-    def test_clear_search_input(self) -> None:
-        driver = webdriver.Chrome()
-        driver.get("https://www.kinopoisk.ru")
-
-        input("Пройдите капчу в браузере, затем нажмите Enter...")
-
-        search_input = driver.find_element(By.NAME, "kp_query")
-        search_input.send_keys("Ужасающий")
-        time.sleep(1)
-        search_input.clear()
-        time.sleep(1)
-
-        assert search_input.get_attribute("value") == ""
-        driver.quit()
+    @allure.title("Рандомный фильм со статусом post-production")
+    @allure.story("Поиск")
+    @pytest.mark.api
+    def test_random_movie(self) -> None:
+        response = make_request("/v1.4/movie/random?type=movie&status=post-production", API_TOKEN)
+        assert response.status_code == 200
+        data = response.json()
+        assert data.get("status") == "post-production"
