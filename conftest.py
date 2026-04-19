@@ -22,16 +22,14 @@ def driver():
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     driver.get(KINOPOISK_URL)
     
-    # Загружаем cookies
     try:
         with open('cookies.json', 'r') as f:
             cookies = json.load(f)
         for cookie in cookies:
             driver.add_cookie(cookie)
         driver.refresh()
-        print("Cookies загружены")
     except FileNotFoundError:
-        print("Файл cookies.json не найден")
+        pass
     
     yield driver
     driver.quit()

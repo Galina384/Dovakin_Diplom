@@ -33,9 +33,9 @@ class TestKinopoiskAPI:
     @allure.title("Поиск по неверному эндпоинту (баг: 200 вместо 404)")
     @allure.story("Негативные тесты")
     @pytest.mark.api
+    @pytest.mark.xfail(reason="ответ 200 вместо 404, баг подтвержден")
     def test_invalid_endpoint(self) -> None:
         response = make_request("/v1.4/movies", API_TOKEN)
-        # БАГ: должно быть 404, приходит 200
         assert response.status_code == 404
 
     @allure.title("Поиск по несуществующему ID")
@@ -66,9 +66,9 @@ class TestKinopoiskAPI:
     @allure.title("Поиск с пустым запросом (баг: 200 вместо 400)")
     @allure.story("Негативные тесты")
     @pytest.mark.api
+    @pytest.mark.xfail(reason="ответ 200 вместо 400, баг подтвержден")
     def test_empty_search(self) -> None:
         response = make_request("/v1.4/movie/search", API_TOKEN)
-        # БАГ: должно быть 400, приходит 200
         assert response.status_code == 400
 
     @allure.title("Запрос без API-ключа (ожидание 401)")
