@@ -7,6 +7,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import os
 from dotenv import load_dotenv
 
+from Page.MainePageUi import MainPage
+
 load_dotenv()
 
 KINOPOISK_URL = os.getenv("KINOPOISK_URL", "https://www.kinopoisk.ru")
@@ -19,25 +21,22 @@ class TestKinopoiskUI:
     @allure.story("Поиск")
     @pytest.mark.ui
     def test_search_movie(self, browser):
-        browser.get(KINOPOISK_URL)
+        name = "Интерстеллар"
+        main = MainPage(browser)
+        main.open()
+        main.input_search(name)
         
-        wait = WebDriverWait(browser, 45)
-        search_input = wait.until(EC.presence_of_element_located((By.NAME, "kp_query")))
-        search_input.send_keys("Интерстеллар")
-        search_input.send_keys(Keys.RETURN)
-        
-        assert "Интерстеллар" in browser.title
+        assert "Интерстеллар" in browser.page_source
 
     @allure.title("Поиск с пустым запросом")
     @allure.story("Поиск")
     @pytest.mark.ui
     def test_search_empty(self, browser):
-        browser.get(KINOPOISK_URL)
-        
-        wait = WebDriverWait(browser, 45)
-        search_input = wait.until(EC.presence_of_element_located((By.NAME, "kp_query")))
-        search_input.send_keys("")
-        search_input.send_keys(Keys.RETURN)
+        name = ""
+        main = MainPage(browser)
+        main.open()
+        main.input_search(name)
+
         
         assert "kinopoisk" in browser.current_url
 
@@ -45,14 +44,12 @@ class TestKinopoiskUI:
     @allure.story("Поиск")
     @pytest.mark.ui
     def test_search_english(self, browser):
-        browser.get(KINOPOISK_URL)
-        
-        wait = WebDriverWait(browser, 45)
-        search_input = wait.until(EC.presence_of_element_located((By.NAME, "kp_query")))
-        search_input.send_keys("Inception")
-        search_input.send_keys(Keys.RETURN)
-        
-        assert "Inception" in browser.title or "Начало" in browser.title
+        name = "The Sopranos"
+        main = MainPage(browser)
+        main.open()
+        main.input_search(name)
+
+        assert "The Sopranos" in browser.page_source
 
     @allure.title("Загрузка главной страницы")
     @allure.story("Навигация")
